@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Quote Calculator | Crystalline Ltd{% endblock %}
+{% block content %}
+<section id="quote-calculator">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Quote calculator</div>
+      <h2>Get an instant price estimate</h2>
+      <p>Enter your window details for a ballpark estimate. For a firm price, submit the full request form below and we'll confirm after a site visit.</p>
+    </div>
+    <div class="calc-wrap">
+      <div class="calc-form">
+        <div class="field">
+          <label for="calcType">Window type</label>
+          <select id="calcType">
+            {% for product in products %}
+            <option value="{{ product.base_rate_per_m2 }}" data-product-id="{{ product.id }}">{{ product.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="calcWidth">Width (mm)</label><input type="number" id="calcWidth" placeholder="e.g. 1200" min="200"></div>
+          <div class="field"><label for="calcHeight">Height (mm)</label><input type="number" id="calcHeight" placeholder="e.g. 1500" min="200"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="calcQty">Quantity</label><input type="number" id="calcQty" value="1" min="1"></div>
+          <div class="field">
+            <label for="calcGlass">Glass type</label>
+            <select id="calcGlass">
+              <option value="1">Clear 4–6mm (standard)</option>
+              <option value="1.3">Tinted / tempered</option>
+              <option value="1.6">Double-glazed</option>
+              <option value="2.1">Laminated / acoustic</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="calcColor">Frame color</label>
+          <select id="calcColor">
+            <option value="1">Champagne / Mill finish</option>
+            <option value="1">White</option>
+            <option value="1.1">Charcoal / Matte black</option>
+            <option value="1.2">Wood-grain finish</option>
+          </select>
+        </div>
+        <button class="btn" style="width:100%;justify-content:center;margin-top:6px;" onclick="calculateQuote()">Calculate Estimate</button>
+      </div>
+      <div class="calc-result">
+        <span class="est-label">Estimated price</span>
+        <div class="est-amount" id="estAmount">KSh —</div>
+        <p class="est-note">This is an automated ballpark estimate based on area and material multipliers. Final pricing is confirmed after a free on-site measurement.</p>
+        <div class="calc-breakdown" id="estBreakdown">
+          <div><span>Area</span><span id="bArea">—</span></div>
+          <div><span>Base rate / m²</span><span id="bRate">—</span></div>
+          <div><span>Quantity</span><span id="bQty">—</span></div>
+        </div>
+        <a href="/get-quote" class="btn dark" style="margin-top:24px;justify-content:center;">Send for Firm Quote</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='quote.js') }}"></script>
+{% endblock %}

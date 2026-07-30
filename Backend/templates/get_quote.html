@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Get a Quote | Crystalline Ltd{% endblock %}
+{% block content %}
+<section class="alt-bg" id="get-quote">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Request a quote</div>
+      <h2>Tell us about your project</h2>
+      <p>Share your details, measurements and photos or building plans — our team will respond within 24 hours with a firm quote.</p>
+    </div>
+    <form class="quote-form" id="quoteForm">
+      <div class="field-row">
+        <div class="field"><label for="qName">Full name</label><input type="text" id="qName" name="name" required></div>
+        <div class="field"><label for="qPhone">Phone number</label><input type="tel" id="qPhone" name="phone" required></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="qEmail">Email</label><input type="email" id="qEmail" name="email" required></div>
+        <div class="field"><label for="qLocation">Location / town</label><input type="text" id="qLocation" name="location" required></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="qProduct">Product needed</label>
+          <select id="qProduct" name="product">
+            <option>Aluminium sliding windows</option>
+            <option>Casement windows</option>
+            <option>Fixed windows</option>
+            <option>Tilt &amp; turn windows</option>
+            <option>Bay windows</option>
+            <option>uPVC windows</option>
+            <option>Frameless glass</option>
+            <option>Shopfronts</option>
+            <option>Office partitions</option>
+            <option>Glass doors</option>
+            <option>Not sure / need advice</option>
+          </select>
+        </div>
+        <div class="field"><label for="qMeasure">Measurements (if known)</label><input type="text" id="qMeasure" name="measurements" placeholder="e.g. 1200 x 1500mm, 4 windows"></div>
+      </div>
+      <div class="field">
+        <label for="qFile">Upload building plans or photos</label>
+        <label class="upload-box" for="qFile">📎 Click to attach files — PDF, JPG or PNG (max 10MB)<input type="file" id="qFile" name="files" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png"></label>
+        <span id="fileNames" style="font-family:var(--mono);font-size:0.78rem;color:var(--graphite-soft);"></span>
+      </div>
+      <div class="field">
+        <label for="qNotes">Additional notes</label>
+        <textarea id="qNotes" name="notes" rows="4" placeholder="Any specific requirements — colors, timelines, budget range…"></textarea>
+      </div>
+      <button type="submit" class="btn" id="quoteSubmitBtn" style="width:100%;justify-content:center;">Submit Quote Request</button>
+      <p id="formError" style="display:none;margin-top:16px;font-family:var(--mono);font-size:0.85rem;color:#c0392b;"></p>
+      <p id="formSuccess" style="display:none;margin-top:16px;font-family:var(--mono);font-size:0.85rem;color:var(--yellow-dark);">✓ Thank you — your request has been received. Our team will contact you within 24 hours.</p>
+    </form>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='quote.js') }}"></script>
+<script>
+// If arriving from a product's "Quote" button (e.g. /get-quote?product=Bay+Windows),
+// pre-select that product in the dropdown so the visitor doesn't have to.
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const product = params.get('product');
+  if (product) {
+    const select = document.getElementById('qProduct');
+    if (select) {
+      const target = product.trim().toLowerCase();
+      for (const option of select.options) {
+        const optionText = option.textContent.trim().toLowerCase();
+        if (optionText === target) {
+          select.value = option.value;
+          break;
+        }
+      }
+    }
+  }
+})();
+</script>
+{% endblock %}

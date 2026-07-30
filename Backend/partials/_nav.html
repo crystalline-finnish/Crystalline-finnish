@@ -1,0 +1,37 @@
+<!-- ===================== UTILITY BAR ===================== -->
+<div class="util-bar">
+  <div class="wrap">
+    <span>Mon–Sat 8:00–18:00 &nbsp;|&nbsp; Countrywide installation &amp; delivery</span>
+    <span style="display:flex;gap:16px;align-items:center;">
+      <a href="tel:+254700000000">+254 700 000 000</a>
+      <select aria-label="Language">
+        <option>EN</option>
+        <option>SW</option>
+        <option>FR</option>
+      </select>
+    </span>
+  </div>
+</div>
+
+<!-- ===================== HEADER ===================== -->
+<header>
+  <div class="nav-row">
+    <a href="/" class="logo"><span class="mark"></span>Crystalline<span class="co">&nbsp;Ltd</span></a>
+    <nav class="primary" id="primaryNav">
+      <a href="/" class="{{ 'active' if request.path == '/' }}">Home</a>
+      <a href="/products" class="{{ 'active' if request.path == '/products' }}">Products</a>
+      <a href="/projects" class="{{ 'active' if request.path == '/projects' }}">Projects</a>
+      <a href="/quote-calculator" class="{{ 'active' if request.path == '/quote-calculator' }}">Quote Calculator</a>
+      <a href="/get-quote" class="{{ 'active' if request.path == '/get-quote' }}">Get a Quote</a>
+      <a href="/about" class="{{ 'active' if request.path == '/about' }}">About Us</a>
+      <a href="/blog" class="{{ 'active' if request.path == '/blog' }}">Blog</a>
+      <a href="/faqs" class="{{ 'active' if request.path == '/faqs' }}">FAQs</a>
+      <a href="/contact" class="{{ 'active' if request.path == '/contact' }}">Contact</a>
+    </nav>
+    <div class="header-cta">
+      <span class="tel">📞 +254 700 000 000</span>
+      <a href="/get-quote" class="btn">Get a Free Quote</a>
+      <button class="burger" id="burgerBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Projects | Crystalline Ltd{% endblock %}
+{% block content %}
+<section class="alt-bg" id="projects">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Projects &amp; portfolio</div>
+      <h2>Recent installations, before &amp; after</h2>
+      <p>A selection of residential and commercial work across Nairobi and beyond.</p>
+    </div>
+    <div class="filter-bar" id="projectFilterBar">
+      <button class="active" data-filter="all">All</button>
+      <button data-filter="residential">Residential</button>
+      <button data-filter="commercial">Commercial</button>
+      <button data-filter="apartments">Apartments</button>
+      <button data-filter="offices">Offices</button>
+    </div>
+    <div class="grid cols-2" id="projectGrid">
+      {% for project in projects %}
+      <figure class="ba" data-category="{{ project.category }}">
+        <div class="imgs">
+          <div style="position:relative"><span class="lbl before">Before</span><img src="{{ project.before_image_url }}" alt="{{ project.title }} — before"></div>
+          <div style="position:relative"><span class="lbl after">After</span><img src="{{ project.after_image_url }}" alt="{{ project.title }} — after"></div>
+        </div>
+        <figcaption><b>{{ project.title }}</b>{% if project.caption %} — {{ project.caption }}{% endif %}</figcaption>
+      </figure>
+      {% else %}
+      <p style="font-family:var(--mono);color:var(--graphite-soft);grid-column:1/-1;">
+        No projects added yet — check back soon.
+      </p>
+      {% endfor %}
+    </div>
+    <p id="noProjectResults" style="display:none;font-family:var(--mono);color:var(--graphite-soft);margin-top:20px;">No projects match this filter.</p>
+    <div style="text-align:center;margin-top:40px;"><a href="/get-quote" class="btn dark">Start Your Project</a></div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+  const filterBar = document.getElementById('projectFilterBar');
+  const grid = document.getElementById('projectGrid');
+  const noResults = document.getElementById('noProjectResults');
+  if (!filterBar || !grid) return;
+
+  filterBar.addEventListener('click', function(e) {
+    if (e.target.tagName !== 'BUTTON') return;
+    filterBar.querySelectorAll('button').forEach((btn) => btn.classList.remove('active'));
+    e.target.classList.add('active');
+    const filter = e.target.dataset.filter || 'all';
+
+    let visibleCount = 0;
+    grid.querySelectorAll('.ba').forEach((card) => {
+      const category = (card.dataset.category || '').toLowerCase();
+      const show = filter === 'all' || category === filter;
+      card.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+    });
+    if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  });
+})();
+</script>
+{% endblock %}

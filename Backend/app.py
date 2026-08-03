@@ -46,8 +46,8 @@ def create_app():
     # correctly if the frontend calls this API using the SAME hostname
     # it's itself served from (both "localhost", or both "127.0.0.1") --
     # the admin app's client.js is built to guarantee that automatically.
-    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-    app.config["SESSION_COOKIE_SECURE"] = False  # dev only (http, not https)
+    app.config["SESSION_COOKIE_SAMESITE"] = Config.SESSION_COOKIE_SAMESITE
+    app.config["SESSION_COOKIE_SECURE"] = Config.SESSION_COOKIE_SECURE
 
     # Allows the React admin app (running on a different port during
     # development, e.g. CRA's localhost:3000) to call this API and still
@@ -242,7 +242,12 @@ def register_routes(app):
 
     @app.route("/login")
     def admin_login_redirect():
-        return redirect(f"{Config.ADMIN_APP_URL}/login", code=307)
+        admin_login_target = Config.ADMIN_APP_URL.rstrip("/")
+        if not admin_login_target.startswith(("http://", "https://")):
+            admin_login_target = f"/{admin_login_target.lstrip('/')}"
+        if not admin_login_target.endswith("/login"):
+            admin_login_target = f"{admin_login_target}/login"
+        return redirect(admin_login_target, code=307)
 
     # ---------- Admin auth (JSON API used by the React admin app) ----------
 

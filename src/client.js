@@ -16,8 +16,12 @@
 // and targets the Flask API on that SAME hostname. Whether you open this
 // app via localhost:3000 or 127.0.0.1:3000, the API call automatically
 // matches -- there's no wrong way to type the URL anymore.
-const BACKEND_PORT = 5000;
-export const API_BASE = `http://${window.location.hostname}:${BACKEND_PORT}`;
+const DEFAULT_API_BASE =
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? `http://${window.location.hostname}:5000`
+    : window.location.origin;
+
+export const API_BASE = process.env.REACT_APP_API_BASE || DEFAULT_API_BASE;
 
 /**
  * Wraps fetch() with the two things every admin request needs:
@@ -36,7 +40,7 @@ export async function apiFetch(path, options = {}) {
   });
 
   if (response.status === 401) {
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
     throw new Error('Session expired. Redirecting to login…');
   }
 
@@ -114,7 +118,7 @@ export async function uploadProductImage(file) {
   });
 
   if (response.status === 401) {
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
     throw new Error('Session expired. Redirecting to login…');
   }
 
@@ -202,7 +206,7 @@ export async function uploadProjectImage(file) {
   });
 
   if (response.status === 401) {
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
     throw new Error('Session expired. Redirecting to login…');
   }
 

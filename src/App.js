@@ -11,10 +11,10 @@ import ProjectsPage from './components/pages/ProjectsPage';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <AuthProvider>
         <Routes>
-          {/* Only public route -- everything else requires login */}
+          {/* Admin entry point */}
           <Route path="/login" element={<LoginPage />} />
 
           {/* Every route below requires a logged-in session, and all

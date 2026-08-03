@@ -7,13 +7,13 @@ export default function AdminLayout() {
 
   async function handleLogout() {
     await logout();
-    navigate('/login', { replace: true });
+    navigate('/admin/login', { replace: true });
   }
 
   return (
     <div className="admin-shell">
       <div className="admin-topbar">
-        <a href="/" className="admin-logo">
+        <a href="/admin" className="admin-logo">
           <span className="mark"></span>Crystalline<span className="co">&nbsp;Admin</span>
         </a>
         <nav className="admin-topnav">
@@ -32,7 +32,7 @@ export default function AdminLayout() {
           <NavLink to="/projects" className={({ isActive }) => (isActive ? 'active' : '')}>
             Projects
           </NavLink>
-          <a href={`http://${window.location.hostname}:5000/`} target="_blank" rel="noopener noreferrer">
+          <a href="/" target="_blank" rel="noopener noreferrer">
             View Site ↗
           </a>
           <button onClick={handleLogout}>Log Out</button>

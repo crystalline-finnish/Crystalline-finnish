@@ -37,9 +37,15 @@ class Config:
     # of the box. validate_production_config() below refuses to start if
     # FLASK_ENV=production and any of these are still at that default.
     ADMIN_API_KEY = os.environ.get("ADMIN_API_KEY", "change-me-please")
-    ADMIN_APP_URL = os.environ.get("ADMIN_APP_URL", "http://localhost:3000")
+    ADMIN_APP_URL = os.environ.get("ADMIN_APP_URL", "/admin")
     ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "crystalline2026")
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+
+    # Session cookie behaviour (useful to override in production when
+    # frontend and backend are on different hostnames). Set to "None"
+    # and SESSION_COOKIE_SECURE=true when you need cross-site cookies.
+    SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
 
     # --- CORS ---
     # Comma-separated list of origins allowed to call this API with

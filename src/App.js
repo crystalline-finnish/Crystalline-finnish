@@ -11,16 +11,11 @@ import ProjectsPage from './components/pages/ProjectsPage';
 
 export default function App() {
   return (
-    <BrowserRouter basename="/admin">
+    <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Admin entry point */}
           <Route path="/login" element={<LoginPage />} />
 
-          {/* Every route below requires a logged-in session, and all
-              share the AdminLayout shell (topbar + nav) via the nested
-              <Outlet />. "/" IS the dashboard -- no extra landing page,
-              no extra redirect hop. */}
           <Route
             element={
               <ProtectedRoute>
@@ -35,8 +30,6 @@ export default function App() {
             <Route path="/projects" element={<ProjectsPage />} />
           </Route>
 
-          {/* Anything unrecognized goes to "/", which itself enforces
-              login via ProtectedRoute above. */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

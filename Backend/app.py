@@ -86,13 +86,35 @@ def allowed_image_file(filename):
 
 
 def save_uploaded_image(app_instance, uploaded_file):
-    """Persist an uploaded image under the shared static images folder and
-    return the public URL that the frontend should store."""
+    """Upload an image to AlwaysData through SFTP and return its public URL."""
     safe_name = secure_filename(uploaded_file.filename)
     unique_name = f"{uuid.uuid4().hex[:10]}_{safe_name}"
-    disk_path = os.path.join(app_instance.config["IMAGE_UPLOAD_FOLDER"], unique_name)
-    uploaded_file.save(disk_path)
-    return f"/static/images/{unique_name}"
+
+    ssh_host = os.environ.get("ALWAYSDATA_SSH_HOST")
+    ssh_user = os.environ.get("ALWAYSDATA_SSH_USER")
+    ssh_password = os.environ.get("ALWAYSDATA_SSH_PASSWORD")
+    image_base_url = os.environ.get("ALWAYSDATA_IMAGE_BASE_URL")
+
+    if not all([ssh_host, ssh_user, ssh_password, image_base_url]):
+        raise RuntimeError("AlwaysData image upload settings are missing.")
+
+    remote_path = f"/home/{ssh_user}/public-images/projects/{unique_name}"
+
+    import paramiko
+
+    transport = paramiko.Transport((ssh_host, 22))
+    transport.connect(username=ssh_user, password=ssh_password)
+
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    try:
+        uploaded_file.stream.seek(0)
+        sftp.putfo(uploaded_file.stream, remote_path)
+    finally:
+        sftp.close()
+        transport.close()
+
+    return f"{image_base_url.rstrip('/')}/{unique_name}"
 
 
 def require_admin_key(view_func):

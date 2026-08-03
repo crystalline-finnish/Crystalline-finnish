@@ -711,24 +711,45 @@ def register_routes(app):
     def upload_project_image():
         """Same pattern as the product image uploader. The admin UI calls
         this twice per project -- once for the 'before' photo, once for
-        'after' -- then sends both resulting URLs when creating/updating
+        the 'after' -- then sends both resulting URLs when creating/updating
         the project.
         """
         if "image" not in request.files:
-            return jsonify({"error": "No image file provided (expected field name 'image')"}), 400
+            return jsonify({
+                "error": "No image file provided (expected field name 'image')"
+            }), 400
 
         file = request.files["image"]
+
         if not file or file.filename == "":
-            return jsonify({"error": "No file selected"}), 400
+            return jsonify({
+                "error": "No file selected"
+            }), 400
 
         if not allowed_image_file(file.filename):
             return jsonify({
-                "error": f"File type not allowed: {file.filename}. "
-                         f"Allowed: {', '.join(Config.ALLOWED_IMAGE_EXTENSIONS)}"
+                "error": (
+                    f"File type not allowed: {file.filename}. "
+                    f"Allowed: {', '.join(Config.ALLOWED_IMAGE_EXTENSIONS)}"
+                )
             }), 400
 
-        image_url = save_uploaded_image(app, file)
-        return jsonify({"url": image_url}), 201
+        try:
+            image_url = save_uploaded_image(app, file)
+        except Exception as e:
+            import traceback
+
+            error_details = traceback.format_exc()
+            print(error_details)
+
+            return jsonify({
+                "error": str(e),
+                "details": error_details
+            }), 500
+
+        return jsonify({
+            "url": image_url
+        }), 201
 
     @app.route("/api/projects", methods=["POST"])
     @require_admin_key

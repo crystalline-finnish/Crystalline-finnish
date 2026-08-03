@@ -6,7 +6,7 @@ import webbrowser
 from email.mime.text import MIMEText
 from functools import wraps
 
-from flask import Flask, render_template, request, jsonify, session, redirect, send_from_directory
+from flask import Flask, app, render_template, request, jsonify, session, redirect, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
@@ -48,14 +48,16 @@ def create_app():
     # correctly if the frontend calls this API using the SAME hostname
     # it's itself served from (both "localhost", or both "127.0.0.1") --
     # the admin app's client.js is built to guarantee that automatically.
-    app.config["SESSION_COOKIE_SAMESITE"] = Config.SESSION_COOKIE_SAMESITE
-    app.config["SESSION_COOKIE_SECURE"] = Config.SESSION_COOKIE_SECURE
+    app.config["SESSION_COOKIE_SAMESITE"] = "None"
+    app.config["SESSION_COOKIE_SECURE"] = True
 
-    # Allows the React admin app (running on a different port during
-    # development, e.g. CRA's localhost:3000) to call this API and still
-    # send/receive the session cookie. Add your deployed admin URL to
-    # CORS_ORIGINS in .env once it's live.
-    CORS(app, supports_credentials=True, origins=Config.CORS_ORIGINS)
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=[
+            "https://crystalline-finnish-tln2.onrender.com"
+        ]
+    )
 
     with app.app_context():
         db.create_all()

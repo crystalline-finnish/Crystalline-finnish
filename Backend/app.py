@@ -1,10 +1,12 @@
 import os
 import uuid
 import smtplib
+import threading
+import webbrowser
 from email.mime.text import MIMEText
 from functools import wraps
 
-from flask import Flask, render_template, request, jsonify, session, redirect
+from flask import Flask, render_template, request, jsonify, session, redirect, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
@@ -190,6 +192,17 @@ def register_routes(app):
     @app.context_processor
     def inject_color_hex():
         return {"color_hex": COLOR_HEX}
+
+    @app.route("/admin")
+    @app.route("/admin/<path:path>")
+    def serve_admin_app(path=""):
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        build_dir = os.path.join(project_root, "build")
+        if path in {"", "."}:
+            return send_from_directory(build_dir, "index.html")
+        if path.startswith("static/"):
+            return send_from_directory(build_dir, path)
+        return send_from_directory(build_dir, "index.html")
 
     @app.route("/")
     def home():
@@ -743,5 +756,12 @@ def register_routes(app):
 
 app = create_app()
 
+
+def open_homepage_in_browser():
+    webbrowser.open("http://127.0.0.1:5000/", new=0, autoraise=True)
+
+
 if __name__ == "__main__":
+    if os.environ.get("FLASK_ENV") != "production":
+        threading.Timer(1.0, open_homepage_in_browser).start()
     app.run(debug=True, port=5000)

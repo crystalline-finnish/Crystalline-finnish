@@ -33,9 +33,15 @@ export default function ProjectModal({ project, onSave, onClose }) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  function normalizeImageUrl(url) {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    return url.startsWith('/') ? `${API_BASE}${url}` : `${API_BASE}/${url}`;
+  }
+
   function previewUrl(url) {
     if (!url) return null;
-    return url.startsWith('http') ? url : `${API_BASE}${url}`;
+    return normalizeImageUrl(url);
   }
 
   async function handleImageUpload(e, field, setUploading) {
@@ -45,7 +51,7 @@ export default function ProjectModal({ project, onSave, onClose }) {
     setError('');
     try {
       const result = await uploadProjectImage(file);
-      updateField(field, `${API_BASE}${result.url}`);
+      updateField(field, normalizeImageUrl(result.url));
     } catch (err) {
       setError(err.message);
     } finally {

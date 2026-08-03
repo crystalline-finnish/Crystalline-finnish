@@ -64,7 +64,9 @@ export default function ProjectsPage() {
   }
 
   function imgUrl(url) {
-    return url && url.startsWith('http') ? url : `${API_BASE}${url}`;
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    return url.startsWith('/') ? `${API_BASE}${url}` : `${API_BASE}/${url}`;
   }
 
   return (

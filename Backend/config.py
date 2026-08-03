@@ -18,8 +18,13 @@ class Config:
     DATABASE_URL = os.environ.get("DATABASE_URL")
     SQLALCHEMY_DATABASE_URI = DATABASE_URL or "sqlite:///crystalline.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    IS_PRODUCTION = os.environ.get("FLASK_ENV") == "production"
+    SESSION_COOKIE_SAMESITE = "None" if IS_PRODUCTION else "Lax"
+    SESSION_COOKIE_SECURE = IS_PRODUCTION
+ 
     SQLALCHEMY_ENGINE_OPTIONS = (
         {"pool_pre_ping": True} if DATABASE_URL else {}
+        
     )
 
     # --- File uploads ---

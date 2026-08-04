@@ -5,8 +5,7 @@ import threading
 import webbrowser
 from email.mime.text import MIMEText
 from functools import wraps
-
-from flask import Flask, app, render_template, request, jsonify, session, redirect, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, redirect, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
@@ -52,12 +51,13 @@ def create_app():
     app.config["SESSION_COOKIE_SECURE"] = True
 
     CORS(
-        app,
-        supports_credentials=True,
-        origins=[
-            "https://crystalline-finnish-tln2.onrender.com"
-        ]
-    )
+    app,
+    supports_credentials=True,
+    origins=[
+        "https://crystalline-finnish-tln2.onrender.com",
+        "https://crystalline.alwaysdata.net",
+    ]
+)
 
     with app.app_context():
         db.create_all()
@@ -86,35 +86,13 @@ def allowed_image_file(filename):
 
 
 def save_uploaded_image(app_instance, uploaded_file):
-    """Upload an image to AlwaysData through SFTP and return its public URL."""
+    """Persist an uploaded image under the shared static images folder and
+    return the public URL that the frontend should store."""
     safe_name = secure_filename(uploaded_file.filename)
     unique_name = f"{uuid.uuid4().hex[:10]}_{safe_name}"
-
-    ssh_host = os.environ.get("ALWAYSDATA_SSH_HOST")
-    ssh_user = os.environ.get("ALWAYSDATA_SSH_USER")
-    ssh_password = os.environ.get("ALWAYSDATA_SSH_PASSWORD")
-    image_base_url = os.environ.get("ALWAYSDATA_IMAGE_BASE_URL")
-
-    if not all([ssh_host, ssh_user, ssh_password, image_base_url]):
-        raise RuntimeError("AlwaysData image upload settings are missing.")
-
-    remote_path = f"/home/{ssh_user}/public-images/projects/{unique_name}"
-
-    import paramiko
-
-    transport = paramiko.Transport((ssh_host, 22))
-    transport.connect(username=ssh_user, password=ssh_password)
-
-    sftp = paramiko.SFTPClient.from_transport(transport)
-
-    try:
-        uploaded_file.stream.seek(0)
-        sftp.putfo(uploaded_file.stream, remote_path)
-    finally:
-        sftp.close()
-        transport.close()
-
-    return f"{image_base_url.rstrip('/')}/{unique_name}"
+    disk_path = os.path.join(app_instance.config["IMAGE_UPLOAD_FOLDER"], unique_name)
+    uploaded_file.save(disk_path)
+    return f"/static/images/{unique_name}"
 
 
 def require_admin_key(view_func):
@@ -711,45 +689,24 @@ def register_routes(app):
     def upload_project_image():
         """Same pattern as the product image uploader. The admin UI calls
         this twice per project -- once for the 'before' photo, once for
-        the 'after' -- then sends both resulting URLs when creating/updating
+        'after' -- then sends both resulting URLs when creating/updating
         the project.
         """
         if "image" not in request.files:
-            return jsonify({
-                "error": "No image file provided (expected field name 'image')"
-            }), 400
+            return jsonify({"error": "No image file provided (expected field name 'image')"}), 400
 
         file = request.files["image"]
-
         if not file or file.filename == "":
-            return jsonify({
-                "error": "No file selected"
-            }), 400
+            return jsonify({"error": "No file selected"}), 400
 
         if not allowed_image_file(file.filename):
             return jsonify({
-                "error": (
-                    f"File type not allowed: {file.filename}. "
-                    f"Allowed: {', '.join(Config.ALLOWED_IMAGE_EXTENSIONS)}"
-                )
+                "error": f"File type not allowed: {file.filename}. "
+                         f"Allowed: {', '.join(Config.ALLOWED_IMAGE_EXTENSIONS)}"
             }), 400
 
-        try:
-            image_url = save_uploaded_image(app, file)
-        except Exception as e:
-            import traceback
-
-            error_details = traceback.format_exc()
-            print(error_details)
-
-            return jsonify({
-                "error": str(e),
-                "details": error_details
-            }), 500
-
-        return jsonify({
-            "url": image_url
-        }), 201
+        image_url = save_uploaded_image(app, file)
+        return jsonify({"url": image_url}), 201
 
     @app.route("/api/projects", methods=["POST"])
     @require_admin_key

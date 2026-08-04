@@ -2,6 +2,7 @@ import os
 import uuid
 import smtplib
 import threading
+import paramiko
 import webbrowser
 from email.mime.text import MIMEText
 from functools import wraps
@@ -86,13 +87,51 @@ def allowed_image_file(filename):
 
 
 def save_uploaded_image(app_instance, uploaded_file):
-    """Persist an uploaded image under the shared static images folder and
-    return the public URL that the frontend should store."""
+    """Upload an image to AlwaysData through SFTP and return its public URL."""
+
     safe_name = secure_filename(uploaded_file.filename)
     unique_name = f"{uuid.uuid4().hex[:10]}_{safe_name}"
-    disk_path = os.path.join(app_instance.config["IMAGE_UPLOAD_FOLDER"], unique_name)
-    uploaded_file.save(disk_path)
-    return f"/static/images/{unique_name}"
+
+    ssh_host = "ssh-crystalline.alwaysdata.net"
+    ssh_username = "crystalline"
+    remote_folder = "/home/crystalline/public-images/projects"
+    public_base_url = "https://crystalline.alwaysdata.net/projects"
+
+    private_key_text = os.environ.get("ALWAYSDATA_SSH_PRIVATE_KEY")
+
+    if not private_key_text:
+        raise RuntimeError(
+            "ALWAYSDATA_SSH_PRIVATE_KEY is missing from Render environment variables."
+        )
+
+    key_path = os.path.join("/tmp", "alwaysdata_upload_key")
+
+    with open(key_path, "w", encoding="utf-8") as key_file:
+        key_file.write(private_key_text)
+
+    os.chmod(key_path, 0o600)
+
+    try:
+        private_key = paramiko.Ed25519Key.from_private_key_file(key_path)
+
+        transport = paramiko.Transport((ssh_host, 22))
+        transport.connect(username=ssh_username, pkey=private_key)
+
+        sftp = paramiko.SFTPClient.from_transport(transport)
+
+        remote_path = f"{remote_folder}/{unique_name}"
+
+        uploaded_file.stream.seek(0)
+        sftp.putfo(uploaded_file.stream, remote_path)
+
+        sftp.close()
+        transport.close()
+
+    finally:
+        if os.path.exists(key_path):
+            os.remove(key_path)
+
+    return f"{public_base_url}/{unique_name}"
 
 
 def require_admin_key(view_func):
